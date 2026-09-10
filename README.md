@@ -1,266 +1,400 @@
-<div align="center">
+# 📚 Comparative Religion AI Assistant
 
-<br/>
+An AI-powered **RAG (Retrieval-Augmented Generation)** assistant built on top of a curated collection of comparative religion and Islamic books.
 
-```
-╔══════════════════════════════════════════════════════════════╗
-║                                                              ║
-║         📚  C O M P A R A T I V E  R E L I G I O N           ║
-║                    B O O K S                                 ║
-║                                                              ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-_A curated open library exploring religion through an Islamic lens_
-
-[![Contributors Welcome](https://img.shields.io/badge/Contributors-Welcome-4CAF50?style=for-the-badge&logo=github)](https://github.com/SENODROOM/ComparativeReligionBooks/pulls)
-[![Library](https://img.shields.io/badge/Format-PDF-red?style=for-the-badge&logo=adobeacrobatreader)](./library)
-[![PRs](https://img.shields.io/badge/PRs-Open-blue?style=for-the-badge)](https://github.com/SENODROOM/ComparativeReligionBooks/pulls)
-[![License](https://img.shields.io/badge/License-Open%20Knowledge-orange?style=for-the-badge)](./LICENSE)
-
-</div>
+The project allows users to ask questions about the books and receive AI-generated answers based on relevant information retrieved directly from the book collection.
 
 ---
 
-<br/>
+## ✨ About the Project
 
-## ✦ About
+**Comparative Religion AI Assistant** combines a digital book library with Artificial Intelligence, Natural Language Processing, embeddings, vector search, and Large Language Models.
 
-> _"Read. In the name of your Lord who created."_ — Quran 96:1
+Instead of sending a user's question directly to an AI model, the system first searches the available books for relevant content. The retrieved information is then provided to the AI model as context.
 
-**ComparativeReligionBooks** is a community-driven digital library housing scholarly works on comparative religion, with a focus on books that illuminate, defend, and elevate the Islamic perspective. Whether you're a student, researcher, or curious mind — this collection is built for you.
-
-All books live in the `/library` folder. Anyone can contribute.
-
-<br/>
+This approach helps generate answers that are grounded in the available source material.
 
 ---
 
-<br/>
+## 🧠 How It Works
 
-## 📂 Repository Structure
+```text
+User asks a question
+        ↓
+Question is converted into an embedding
+        ↓
+FAISS searches for relevant book sections
+        ↓
+Relevant text chunks are retrieved
+        ↓
+Retrieved content is sent to the AI model
+        ↓
+AI generates an answer
+        ↓
+Answer and book sources are displayed
+````
 
-```
+---
+
+## 🏗️ Project Structure
+
+```text
 ComparativeReligionBooks/
 │
-├── 📁 library/          ← All PDFs live here, organized by topic
-│   ├── 📁 islam/
-│   ├── 📁 christianity/
-│   ├── 📁 comparative-religion/
-│   ├── 📁 philosophy/
-│   ├── 📁 social-questions/
+├── 📁 library/
+│   ├── islam/
+│   ├── christianity/
+│   ├── comparative-religion/
+│   ├── philosophy/
 │   └── ...
 │
-└── 📄 README.md
+├── 📁 rag/
+│   ├── ingest.py
+│   ├── retriever.py
+│   ├── generator.py
+│   └── requirements.txt
+│
+├── 📁 backend/
+│   ├── app.py
+│   └── config.py
+│
+├── 📁 frontend/
+│   ├── home.html
+│   ├── style.css
+│   └── script.js
+│
+├── 📁 data/
+│   ├── chunks.json
+│   └── index.faiss
+│
+├── .env
+├── .gitignore
+└── README.md
 ```
 
-<br/>
+> The generated files inside `data/` are created locally during the RAG ingestion process and are excluded from Git tracking.
 
 ---
 
-<br/>
+## 🔧 Technologies Used
 
-## 📜 The Collection
-
-The `/library` folder contains peer-reviewed and community-contributed PDFs covering:
-
-- ☪️ Islamic theology & philosophy
-- 🔍 Comparative religion & interfaith analysis
-- 🌍 Historical perspectives on world religions
-- 📖 Scholarly defenses and apologetics of Islam
-- 🕊️ Ethics, spirituality, and metaphysics
-
-<br/>
+* **Python** – Core programming language
+* **FastAPI** – Backend API
+* **Sentence Transformers** – Text embeddings
+* **FAISS** – Vector similarity search
+* **PyPDF** – PDF text extraction
+* **NumPy** – Numerical processing
+* **Google Gemini API** – AI answer generation
+* **HTML** – Frontend structure
+* **CSS** – Frontend styling
+* **JavaScript** – Frontend interaction
 
 ---
 
-<br/>
+## 🔍 RAG Pipeline
 
-## 🤝 How to Contribute — Pull Request Guide
+### 1. PDF Ingestion
 
-We warmly welcome contributions from the community! Follow the steps below to submit books via a Pull Request (PR).
+The `rag/ingest.py` script scans the `library/` directory and processes the available PDF books.
 
-<br/>
+It:
 
-### ⚡ Step-by-Step: Creating a Pull Request
+* Finds PDF files recursively
+* Extracts text from PDFs
+* Splits the text into smaller chunks
+* Generates vector embeddings
+* Creates a FAISS vector index
+* Saves the processed chunks locally
 
-<br/>
+---
 
-**① Fork the Repository**
+### 2. Text Embeddings
 
-Click the **Fork** button at the top-right of this page to create your own copy of the repository.
+The project uses the **Sentence Transformers** model:
 
+```text
+all-MiniLM-L6-v2
 ```
-https://github.com/SENODROOM/ComparativeReligionBooks
-                                              ↑ Click Fork
+
+The model converts text into numerical vectors called embeddings.
+
+These embeddings allow the system to find text that is semantically similar to the user's question.
+
+---
+
+### 3. Vector Search
+
+The project uses **FAISS** to perform similarity search.
+
+When a user asks a question, the system searches the vector index and retrieves the most relevant sections from the available books.
+
+The retriever currently returns the top relevant chunks from the collection.
+
+---
+
+### 4. AI Answer Generation
+
+The retrieved book content is passed to the **Google Gemini API** as source material.
+
+The AI is instructed to:
+
+* Use the provided source material
+* Avoid inventing books, quotes, or references
+* Clearly indicate when the source material is insufficient
+* Provide a helpful and concise answer
+* Respect different religious viewpoints
+
+---
+
+## ⚙️ Backend
+
+The backend is built using **FastAPI**.
+
+The main API endpoint is:
+
+```text
+POST /ask
 ```
 
-<br/>
+Example request:
 
-**② Clone Your Fork**
+```json
+{
+  "question": "What does the book say about Islam?"
+}
+```
+
+The backend:
+
+1. Receives the user's question
+2. Searches the RAG index
+3. Retrieves relevant book content
+4. Sends the context to Gemini
+5. Returns the generated answer
+6. Returns the relevant book sources
+
+---
+
+## 🖥️ Frontend
+
+The project includes a simple web-based AI chat interface.
+
+Users can:
+
+* Ask questions about the books
+* Receive AI-generated answers
+* View relevant sources
+* Use quick question prompts
+* Interact with the assistant through a chat-style interface
+
+The frontend communicates with the FastAPI backend through the `/ask` API endpoint.
+
+---
+
+## 🚀 Installation and Setup
+
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/ComparativeReligionBooks.git
+git clone https://github.com/SENODROOM/ComparativeReligionBooks.git
 cd ComparativeReligionBooks
 ```
 
-<br/>
+---
 
-**③ Create a New Branch**
+### 2. Install Python Dependencies
 
-Name your branch something descriptive:
+The project uses Python 3.13.
+
+Install the required packages:
 
 ```bash
-git checkout -b add/5-books-on-islamic-theology
+pymanager exec -3.13 -m pip install -r rag/requirements.txt
 ```
 
-<br/>
+---
 
-**④ Add Your PDFs to the `/library` Folder**
+### 3. Configure Gemini API
 
-Place exactly **5 PDF files** inside the `library/` directory.
+Create a `.env` file in the project root:
+
+```env
+GEMINI_API_KEY=YOUR_API_KEY
+```
+
+Replace `YOUR_API_KEY` with your Google Gemini API key.
+
+**Never expose your API key in frontend files or commit the `.env` file to GitHub.**
+
+---
+
+### 4. Build the RAG Index
+
+Run:
 
 ```bash
-cp /path/to/your/books/*.pdf library/
+pymanager exec -3.13 rag/ingest.py
 ```
 
-Use clean, descriptive filenames:
+This processes the books and creates the local RAG data:
 
+```text
+data/chunks.json
+data/index.faiss
 ```
-✅  Good:   the-concept-of-god-in-islam-ahmed-deedat.pdf
-❌  Avoid:  book1.pdf / FINAL_v3_copy.pdf
-```
 
-<br/>
+---
 
-**⑤ Stage and Commit Your Changes**
+### 5. Start the Backend
+
+Run:
 
 ```bash
-git add library/
-git commit -m "feat: add 5 books on comparative religion defending Islam"
+pymanager exec -3.13 -m uvicorn backend.app:app --reload
 ```
 
-<br/>
+The backend will run at:
 
-**⑥ Push to Your Fork**
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+### 6. Start the Frontend
+
+Open another terminal:
 
 ```bash
-git push origin add/5-books-on-islamic-theology
+cd frontend
+pymanager exec -3.13 -m http.server 5501
 ```
 
-<br/>
+Then open:
 
-**⑦ Open the Pull Request**
-
-1. Go to the original repository on GitHub
-2. Click **"Compare & pull request"**
-3. Fill in the PR template (see below)
-4. Submit!
-
-<br/>
-
----
-
-<br/>
-
-## 📋 PR Template
-
-When opening your PR, please include the following in your description:
-
-```markdown
-## 📚 Book Submission
-
-### Books Added (5 required)
-
-| #   | Title | Author | Topic |
-| --- | ----- | ------ | ----- |
-| 1   | ...   | ...    | ...   |
-| 2   | ...   | ...    | ...   |
-| 3   | ...   | ...    | ...   |
-| 4   | ...   | ...    | ...   |
-| 5   | ...   | ...    | ...   |
-
-### Why these books?
-
-<!-- Briefly explain how each book defends or supports Islam -->
-
-### Checklist
-
-- [ ] All 5 PDFs are placed in the `/library` folder
-- [ ] All books are relevant to comparative religion
-- [ ] All books defend or support the Islamic perspective
-- [ ] File names are clean and descriptive
-- [ ] No duplicate titles already in the library
+```text
+http://127.0.0.1:5501/home.html
 ```
 
-<br/>
-
 ---
 
-<br/>
+## 📖 Book Library
 
-## 📏 PR Rules & Guidelines
+The `library/` directory contains PDF books organized into different categories.
 
-> Please read carefully before submitting. PRs that don't meet these requirements will be closed.
+Examples include:
 
-<br/>
-
-| Rule                  | Requirement                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------ |
-| 📖 **Book Count**     | Each PR must contain **exactly 5 PDF books**                                                                 |
-| ☪️ **Content**        | All books must **defend or support Islam** — through theology, comparative analysis, apologetics, or history |
-| 📁 **Location**       | All PDFs must be placed inside the `library/` folder                                                         |
-| 🏷️ **Naming**         | Use descriptive filenames: `title-author.pdf` (lowercase, hyphens, no spaces)                                |
-| 🚫 **No Duplicates**  | Check existing files before submitting to avoid duplicates                                                   |
-| 📄 **Format**         | PDF format only — no `.epub`, `.docx`, or other formats                                                      |
-| ✍️ **PR Description** | Must include book titles, authors, and a brief justification                                                 |
-
-<br/>
-
-> **Note:** Books promoting anti-Islamic content, hate speech, or misinformation will be rejected without review.
-
-<br/>
-
----
-
-<br/>
-
-## 🔍 Review Process
-
-```
-You submit PR
-      ↓
-Maintainer reviews book relevance & PR rules
-      ↓
-Feedback given (if needed) → You update PR
-      ↓
-PR approved & merged ✅
+```text
+library/
+├── islam/
+├── christianity/
+├── comparative-religion/
+├── philosophy/
+└── other-topics/
 ```
 
-Reviews typically happen within **3–7 days**. Be patient and respectful in discussions.
-
-<br/>
+The library can be expanded with additional relevant books.
 
 ---
 
-<br/>
+## 🔐 Security
 
-## 🌟 Contributors
+The Gemini API key is stored in the backend `.env` file.
 
-A heartfelt **جزاكم الله خيرًا** _(Jazakumullahu Khayran)_ — may Allah reward all those who have contributed to spreading knowledge.
+The API key is not included in frontend JavaScript.
 
-<br/>
+The following generated files are ignored by Git:
 
-<div align="center">
+```text
+.env
+data/chunks.json
+data/index.faiss
+__pycache__/
+*.pyc
+```
+
+This prevents sensitive information and large generated files from being accidentally committed.
 
 ---
 
-_"Seeking knowledge is an obligation upon every Muslim."_
-— Prophet Muhammad ﷺ _(Ibn Majah)_
+## 🎯 Project Goals
+
+The main goals of this project are to:
+
+* Make a large collection of books easier to explore
+* Provide AI-assisted research
+* Retrieve relevant information from books
+* Generate answers grounded in source material
+* Display relevant book sources
+* Demonstrate a practical RAG and LLM application
+* Combine traditional digital libraries with modern AI technology
 
 ---
 
-**⭐ Star this repo if you find it valuable**
-**🔁 Share it to spread beneficial knowledge**
+## 🌟 Key Features
 
-</div>
+* 📚 PDF-based knowledge library
+* 🔎 Semantic search
+* 🧠 AI-powered question answering
+* ⚡ FAISS vector retrieval
+* 🤖 Google Gemini integration
+* 🔗 Source-aware responses
+* 🌐 FastAPI backend
+* 💻 Interactive web frontend
+* 🔐 Environment-based API key protection
+
+---
+
+## ⚠️ Disclaimer
+
+This project is intended for educational and research purposes.
+
+AI-generated answers should be checked against the original books and source material, especially when dealing with religious, historical, or scholarly topics.
+
+The assistant should not be treated as a replacement for qualified scholars, researchers, or primary sources.
+
+---
+
+## 👩‍💻 Project Stack
+
+```text
+PDF Books
+   ↓
+PyPDF
+   ↓
+Text Chunking
+   ↓
+Sentence Transformers
+   ↓
+FAISS Vector Database
+   ↓
+FastAPI
+   ↓
+Google Gemini
+   ↓
+Web Chat Interface
+```
+
+---
+
+## 📌 Future Improvements
+
+Possible future improvements include:
+
+* Better document metadata
+* Page-level citations
+* Improved source highlighting
+* Book and author filters
+* Multi-language support
+* Conversation history
+* Advanced semantic search
+* More efficient document processing
+* Improved answer evaluation
+
+---
+
+## ⭐ Conclusion
+
+**Comparative Religion AI Assistant** demonstrates how a traditional digital book collection can be transformed into an interactive AI-powered knowledge system using **RAG, embeddings, vector search, FastAPI, and Google Gemini**.
+
+The project provides a foundation for building a reliable AI research assistant grounded in a curated collection of books.
